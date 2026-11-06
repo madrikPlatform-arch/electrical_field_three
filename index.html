@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>المجالات الكهربية</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] }, svg: { fontCache: 'global' } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{--primary-blue:#1e3a8a;--teal:#0d9488;--bg:#f1f5f9;--ok:#16a34a;--bad:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:#0f172a;line-height:1.8}
+header{background:linear-gradient(135deg,var(--primary-blue),var(--teal));color:#fff;text-align:center;padding:18px 12px}
+header h1{margin:0;font-size:1.5rem}
+header p{margin:4px 0 0;opacity:.9;font-size:.95rem}
+main{max-width:820px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.08);padding:18px;margin-bottom:16px}
+input[type=text],input[type=number]{width:100%;padding:12px;font-size:1.1rem;border:2px solid #cbd5e1;border-radius:10px;margin:10px 0;text-align:center}
+button{background:var(--primary-blue);color:#fff;border:0;border-radius:10px;padding:12px 22px;font-size:1.05rem;cursor:pointer;width:100%}
+button:disabled{opacity:.6;cursor:not-allowed}
+.err{color:var(--bad);font-weight:700;min-height:1.5em}
+.top{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;gap:8px;background:#fff;border-bottom:3px solid var(--teal);padding:10px 14px;font-weight:700;color:var(--primary-blue)}
+.sec{background:var(--primary-blue);color:#fff;padding:8px 14px;border-radius:10px;margin:18px 0 10px;font-weight:700}
+.qn{color:var(--teal);font-weight:800}
+.qimg{display:block;max-width:100%;margin:10px auto;border-radius:8px}
+.opt{display:flex;align-items:center;gap:10px;border:2px solid #e2e8f0;border-radius:10px;padding:9px 12px;margin:8px 0;cursor:pointer}
+.opt:hover{border-color:var(--teal)}
+.opt input{width:18px;height:18px}
+.opt.sel{border-color:var(--primary-blue);background:#eff6ff}
+.opt.right{border-color:var(--ok);background:#f0fdf4}
+.opt.wrong{border-color:var(--bad);background:#fef2f2}
+.fb{margin-top:8px;font-weight:700}
+.banner{text-align:center;font-size:1.6rem;font-weight:800;color:#fff;background:var(--teal);border-radius:14px;padding:16px;margin-bottom:12px}
+.sync{text-align:center;font-weight:700;margin-bottom:14px}
+.hidden{display:none}
+@media(max-width:480px){main{padding:8px}.card{padding:12px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>المجالات الكهربية</h1>
+  <p>الصف الثاني عشر متقدم – المجالات الكهربية وقانون جاوس</p>
+</header>
+<main>
+  <section id="login-section" class="card">
+    <h2 style="margin-top:0;color:var(--primary-blue)">تسجيل الدخول</h2>
+    <label for="sid">أدخل كود الطالب</label>
+    <input id="sid" type="text" inputmode="numeric" placeholder="مثال: 18" autocomplete="off">
+    <div id="login-err" class="err"></div>
+    <button id="login-btn">تحقق ودخول</button>
+  </section>
+
+  <section id="exam-section" class="hidden">
+    <div class="top"><span id="welcome"></span><span>⏱ <span id="timer">00:00</span></span></div>
+    <div id="questions"></div>
+    <button id="submit-btn" style="margin-top:10px">إنهاء الامتحان وإرسال النتيجة</button>
+    <div id="result" class="hidden" style="margin-top:16px">
+      <div id="banner" class="banner"></div>
+      <div id="sync" class="sync"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const EXAM_META = {
+  subject: "فيزياء",
+  module: "المجالات الكهربية وقانون جاوس",
+  lesson: "المجالات الكهربية وقانون جاوس",
+  type: "اختبار"
+};
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSAFcPEXqQfaFu4P2x1XTgBNsWb_V7OA9AjW_5HBfKB17nL_YcY4iE58AH3bObx5k/exec";
+
+const M = String.raw;
+// a = رقم الإجابة الصحيحة (يبدأ من 0) ، tag = وسم نقطة الضعف ، sec = عنوان القسم (يظهر قبل السؤال)
+// الصورة الخاصة بكل سؤال: img/رقم_السؤال.امتداد (png, jpg, jpeg, webp, svg, gif)
+const QUESTIONS = [
+  {sec:"2.5 التوزيعات العامة للشحنة", tag:"كثافة الشحنة الخطية",
+   t:M`ما وحدة قياس كثافة الشحنة الخطية \(\lambda\) الموجودة على سلك رفيع وطويل؟`,
+   o:[M`\(C/m^2\)`,M`\(C/m\)`,M`\(C/m^3\)`,M`\(C/s\)`], a:1},
+  {tag:"أنواع كثافة الشحنة",
+   t:M`ماذا تمثل \(X\) في الصيغة \(dq = X\,dV\) وما وحدة قياسها؟`,
+   o:[M`كثافة الشحنة الخطية \(C/m\)`,M`كثافة الشحنة السطحية \(C/m^2\)`,M`كثافة الشحنة الحجمية \(C/m^3\)`,M`كثافة الشحنة الحجمية \(C/m^4\)`], a:2},
+  {tag:"كثافة الشحنة السطحية",
+   t:M`كرة موصلة نصف قطرها \(3\,cm\) وشحنتها الكلية \(5\,nC\). ما مقدار كثافة الشحنة السطحية \(\sigma\)؟`,
+   o:[M`\(4.42\times10^{-7}\,C/m^2\)`,M`\(1.77\times10^{-7}\,C/m^2\)`,M`\(4.42\times10^{-9}\,C/m^2\)`,M`\(1.33\times10^{-5}\,C/m^2\)`], a:0},
+  {tag:"كثافة الشحنة الحجمية",
+   t:M`كرة غير موصلة نصف قطرها \(3\,cm\) تتوزع على حجمها بانتظام شحنة \(5\,nC\). ما مقدار كثافة الشحنة الحجمية \(\rho\)؟`,
+   o:[M`\(1.33\times10^{-5}\,C/m^3\)`,M`\(4.42\times10^{-7}\,C/m^3\)`,M`\(4.42\times10^{-5}\,C/m^3\)`,M`\(1.77\times10^{-4}\,C/m^3\)`], a:2},
+  {tag:"تكامل الشحنة",
+   t:"أي المعادلات التالية تعبر عن الشحنة الكلية الموزعة على سطح؟",
+   o:[M`\(q=\int \lambda\,dx\)`,M`\(q=\int q\,dr\)`,M`\(q=\int \rho\,dV\)`,M`\(q=\int \sigma\,dA\)`], a:3},
+
+  {sec:"2.6 القوة الناتجة عن مجال كهربائي", tag:"القوة الكهربية F = qE",
+   t:M`احسب مقدار القوة الكهربائية المؤثرة على جسيم به إلكترونان زائدان في وجود مجال كهربائي \(10.0\,kN/C\).`,
+   o:[M`\(3.2\times10^{-15}\,N\)`,M`\(1.6\times10^{-15}\,N\)`,M`\(3.2\times10^{-19}\,N\)`,M`\(1.6\times10^{-23}\,N\)`], a:0},
+  {tag:"حركة شحنة في مجال منتظم",
+   t:"شحنة موجبة صغيرة ساكنة في مجال كهربائي منتظم كما بالشكل. عندما تتحرر الشحنة فإنها ...",
+   o:["لا تتحرك","تبدأ في الحركة بسرعة ثابتة","تبدأ في الحركة بعجلة ثابتة","تبدأ في الحركة بعجلة متزايدة"], a:2},
+  {tag:"تسارع شحنة في مجال",
+   t:M`وُضع بروتون في مجال كهربائي منتظم شدته \(E=0.6\,V/m\). أوجد تسارع البروتون بوحدة \(m/s^2\). (\(m_p=1.67\times10^{-27}kg,\ q_p=1.6\times10^{-19}C\))`,
+   o:[M`\(1.74\times10^{-8}\)`,M`\(5.75\times10^{7}\)`,M`\(9.6\times10^{-20}\)`,M`\(2.8\times10^{7}\)`], a:1},
+  {tag:"المجال المنتظم",
+   t:"يمكن وضع جسم صغير موجب الشحنة في مجال كهربائي منتظم عند الموضع A أو الموضع B في الشكل. كيف تقارن القوى الكهربائية المؤثرة على الجسم في الموضعين؟",
+   o:["مقدار القوة أكبر عند الموضع A","مقدار القوة أكبر عند الموضع B","لا توجد قوة كهربائية عند أي من الموضعين","القوة عند A هي نفس القوة غير الصفرية عند B"], a:3},
+  {tag:"اتجاه القوة على الشحنة السالبة",
+   t:M`وُضعت شحنة سالبة \(-q\) في مجال كهربائي غير منتظم كما هو موضح في الشكل. ما اتجاه القوة الكهربائية على هذه الشحنة؟`,
+   o:["نحو اليمين","نحو اليسار","إلى أعلى","إلى أسفل"], a:1},
+  {tag:"تسارع إلكترون في مجال",
+   t:M`يوجد مجال كهربائي شدته \(150\,N/C\) موجه رأسيًا إلى الأسفل بالقرب من سطح الأرض. أوجد التسارع (مقدارًا واتجاهًا) لإلكترون أُطلق بالقرب من سطح الأرض. (\(m_e=9.11\times10^{-31}kg\))`,
+   o:[M`\(2.63\times10^{13}\,m/s^2\) إلى أعلى`,M`\(2.63\times10^{13}\,m/s^2\) إلى أسفل`,M`\(1.64\times10^{11}\,m/s^2\) إلى أعلى`,M`\(9.8\,m/s^2\) إلى أسفل`], a:0},
+  {tag:"الانحراف الرأسي لإلكترون",
+   t:M`أُطلق إلكترون بطاقة حركية \(2.00\,keV\) أفقيًا عبر لوح موصل مشحون موجه أفقيًا بكثافة شحنة سطحية \(+4.00\times10^{-6}\,C/m^2\)، ومسار الإلكترون أعلى اللوح. ما الانحراف الرأسي للإلكترون بعد أن قطع مسافة أفقية \(4.00\,cm\)؟ (الاتجاه الموجب لأعلى)`,
+   o:[M`\(-9.02\,cm\)`,M`\(-4.51\,cm\)`,M`\(+9.02\,cm\)`,M`\(-1.80\,cm\)`], a:0},
+  {tag:"سرعة الإطلاق لإلكترون",
+   t:M`أُطلق إلكترون أفقيًا باتجاه \(x\) الموجب فوق لوح موصل مشحون أفقيًا بكثافة شحنة سطحية \(+3.0\times10^{-15}\,C/m^2\). إذا كان الانحراف الرأسي \(0.5\,cm\) بعد أن قطع مسافة أفقية \(2.0\,cm\)، فما سرعة الإلكترون عند إطلاقه؟ (أهمل الجاذبية الأرضية)`,
+   o:[M`\(2.4\times10^{6}\,m/s\)`,M`\(1.2\times10^{6}\,m/s\)`,M`\(1.6\times10^{3}\,m/s\)`,M`\(1.3\times10^{5}\,m/s\)`], a:2},
+  {tag:"إلكترون موازٍ للمجال",
+   t:M`لوحظ إلكترون يتحرك بسرعة \(27.5\times10^{6}\,m/s\) موازيًا لمجال كهربائي قوته \(11{,}400\,N/C\). ما المسافة التي سيقطعها الإلكترون قبل أن يتوقف؟`,
+   o:[M`\(0.378\,m\)`,M`\(0.0945\,m\)`,M`\(1.89\,m\)`,M`\(0.189\,m\)`], a:3},
+  {tag:"حركة شحنة في مجال والجاذبية",
+   t:M`كرة معدنية صغيرة كتلتها \(4.00\,g\) وشحنتها \(5.00\,mC\) على ارتفاع \(0.700\,m\) فوق سطح الأرض في مجال كهربائي شدته \(12.0\,N/C\) يتجه نحو الشرق. أُطلقت الكرة من السكون. ما سرعتها بعد أن تحركت لأسفل مسافة رأسية \(0.300\,m\)؟ (\(g=9.8\,m/s^2\))`,
+   o:[M`\(2.42\,m/s\)`,M`\(4.43\,m/s\)`,M`\(3.71\,m/s\)`,M`\(5.88\,m/s\)`], a:1}
+];
+
+const EXTS = ['png','jpg','jpeg','webp','svg','gif','PNG','JPG','JPEG'];
+const $ = id => document.getElementById(id);
+let studentId = "", studentName = "", seconds = 0, tick = null, submitted = false;
+
+function imgTag(n){
+  return `<img class="qimg" alt="" data-n="${n}" data-i="0" src="img/${n}.${EXTS[0]}" onerror="nextExt(this)">`;
+}
+function nextExt(el){
+  const i = +el.dataset.i + 1;
+  if (i >= EXTS.length) { el.style.display = 'none'; el.onerror = null; return; }
+  el.dataset.i = i;
+  el.src = `img/${el.dataset.n}.${EXTS[i]}`;
+}
+
+function render(){
+  $('questions').innerHTML = QUESTIONS.map((q,i)=>{
+    const n = i+1;
+    return (q.sec ? `<div class="sec">${q.sec}</div>` : '') + `
+    <div class="card" id="q${n}" data-tag="${q.tag}">
+      <div><span class="qn">سؤال ${n}:</span> ${q.t}</div>
+      ${imgTag(n)}
+      ${q.o.map((o,j)=>`<label class="opt" data-j="${j}"><input type="radio" name="q${n}" value="${j}"><span>${o}</span></label>`).join('')}
+      <div class="fb"></div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.opt input').forEach(r=>r.addEventListener('change',()=>{
+    if (submitted) return;
+    const card = r.closest('.card');
+    card.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+    r.closest('.opt').classList.add('sel');
+  }));
+  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise();
+}
+
+$('login-btn').addEventListener('click', login);
+$('sid').addEventListener('keydown', e=>{ if(e.key==='Enter') login(); });
+
+async function login(){
+  const id = $('sid').value.trim();
+  const err = $('login-err'); err.textContent = '';
+  if (!id){ err.textContent = 'الكود غير صحيح'; return; }
+  const btn = $('login-btn'); btn.disabled = true; btn.textContent = 'جارٍ التحقق...';
+  try{
+    const res = await fetch(`${SCRIPT_URL}?student_id=${encodeURIComponent(id)}`);
+    const data = await res.json();
+    if (data && data.valid){
+      studentId = id; studentName = data.student_name || '';
+      $('login-section').classList.add('hidden');
+      $('exam-section').classList.remove('hidden');
+      $('welcome').textContent = `مرحباً بك: ${studentName}`;
+      render();
+      tick = setInterval(()=>{
+        seconds++;
+        $('timer').textContent = String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+      },1000);
+    } else {
+      err.textContent = (data && data.error) ? data.error : 'الكود غير مسجل في قاعدة البيانات.';
+    }
+  }catch(e){
+    err.textContent = 'تعذر الاتصال بالخادم، حاول مرة أخرى.';
+  }
+  btn.disabled = false; btn.textContent = 'تحقق ودخول';
+}
+
+$('submit-btn').addEventListener('click', submitExam);
+
+async function submitExam(){
+  if (submitted) return;
+  const btn = $('submit-btn');
+  btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
+  submitted = true; clearInterval(tick);
+
+  let score = 0; const weaknesses = new Set(); const details = [];
+  QUESTIONS.forEach((q,i)=>{
+    const n = i+1, card = $('q'+n);
+    const chosen = card.querySelector('input:checked');
+    const sel = chosen ? +chosen.value : null;
+    const ok = sel === q.a;
+    if (ok) score++; else weaknesses.add(q.tag);
+    details.push({q:n, selected: sel===null?null:sel+1, correct:q.a+1, isCorrect:ok, tag:q.tag});
+    card.querySelectorAll('input').forEach(r=>r.disabled=true);
+    card.querySelectorAll('.opt').forEach(o=>{
+      const j = +o.dataset.j;
+      if (j===q.a) o.classList.add('right');
+      else if (j===sel) o.classList.add('wrong');
+    });
+    const fb = card.querySelector('.fb');
+    fb.style.color = ok ? 'var(--ok)' : 'var(--bad)';
+    fb.textContent = ok ? '✔ إجابة صحيحة' : (sel===null ? '✘ لم تجب – الإجابة الصحيحة موضحة بالأخضر' : '✘ إجابة خاطئة – الإجابة الصحيحة موضحة بالأخضر');
+  });
+
+  const total = QUESTIONS.length;
+  $('result').classList.remove('hidden');
+  $('banner').textContent = `النتيجة: ${score} / ${total}`;
+  $('sync').textContent = 'جارٍ حفظ النتيجة...';
+  $('result').scrollIntoView({behavior:'smooth'});
+
+  const payload = {
+    studentId, subject: EXAM_META.subject, module: EXAM_META.module,
+    lesson: EXAM_META.lesson, assessmentType: EXAM_META.type,
+    score, total, timeSeconds: seconds, weaknesses: [...weaknesses], details
+  };
+  try{
+    // text/plain لتجنب مشاكل CORS مع Google Apps Script
+    const res = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
+    await res.text();
+    $('sync').style.color = 'var(--ok)';
+    $('sync').textContent = '✔ تم حفظ نتيجتك بنجاح';
+  }catch(e){
+    try{
+      await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
+      $('sync').style.color = 'var(--ok)';
+      $('sync').textContent = '✔ تم إرسال نتيجتك';
+    }catch(e2){
+      $('sync').style.color = 'var(--bad)';
+      $('sync').textContent = '✘ تعذر حفظ النتيجة، أبلغ المعلم وأرسل له لقطة شاشة.';
+    }
+  }
+  btn.classList.add('hidden');
+  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise();
+}
+</script>
+</body>
+</html>
